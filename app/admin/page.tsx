@@ -13,7 +13,7 @@ interface Service {
   image_url?: string | null;
 }
 
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = "https://brd-7oq0.onrender.com";
 const ADMIN_KEY = "my-admin-key";
 
 export default function AdminPage() {

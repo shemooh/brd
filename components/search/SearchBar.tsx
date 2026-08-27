@@ -33,7 +33,7 @@ export default function SearchBar({
     async function loadServices() {
       try {
         const response = await fetch(
-          "http://127.0.0.1:5000/api/services"
+          "https://brd-7oq0.onrender.com/api/services"
         );
 
         if (!response.ok) {

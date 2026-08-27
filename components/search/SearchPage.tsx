@@ -41,7 +41,7 @@ export default function SearchPage() {
     try {
       const response =
         await fetch(
-          `http://127.0.0.1:5000/api/search?q=${encodeURIComponent(
+          `https://brd-7oq0.onrender.com/api/search?q=${encodeURIComponent(
             searchQuery
           )}`
         );
@@ -157,7 +157,7 @@ export default function SearchPage() {
                               "http"
                             )
                               ? service.image_url
-                              : `http://127.0.0.1:5000${service.image_url}`
+                              : `https://brd-7oq0.onrender.com${service.image_url}`
                           }
                           alt={
                             service.name

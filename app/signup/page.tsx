@@ -29,7 +29,7 @@ export default function SignupPage() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:5000/api/auth/signup",
+        "https://brd-7oq0.onrender.com/api/auth/signup",
         {
           method: "POST",
 

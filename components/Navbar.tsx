@@ -23,7 +23,7 @@ export default function Navbar() {
     try {
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/me",
+        "https://brd-7oq0.onrender.com/api/auth/me",
         {
           method: "GET",
           credentials: "include",
@@ -96,7 +96,7 @@ export default function Navbar() {
     try {
 
       await fetch(
-        "http://localhost:5000/api/auth/logout",
+        "https://brd-7oq0.onrender.com/api/auth/logout",
         {
           method: "POST",
           credentials: "include",
