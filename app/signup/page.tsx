@@ -4,6 +4,10 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://brd-7oq0.onrender.com";
+
 export default function SignupPage() {
 
   const router = useRouter();
@@ -17,7 +21,7 @@ export default function SignupPage() {
 
 
   async function handleSignup(
-    event: FormEvent
+    event: FormEvent<HTMLFormElement>
   ) {
 
     event.preventDefault();
@@ -29,7 +33,7 @@ export default function SignupPage() {
     try {
 
       const response = await fetch(
-        "https://brd-7oq0.onrender.com/api/auth/signup",
+        `${API_URL}/api/auth/signup`,
         {
           method: "POST",
 

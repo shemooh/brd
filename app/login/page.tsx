@@ -34,7 +34,7 @@ export default function LoginPage() {
     try {
 
       const response = await fetch(
-        "https://brd-7oq0.onrender.com/api/auth/login",
+  `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
         {
           method: "POST",
 

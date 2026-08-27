@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -16,9 +15,12 @@ interface Service {
   image_url?: string;
 }
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:5000";
+
 export default function SearchPage() {
-  const [query, setQuery] =
-    useState("");
+  const [query, setQuery] = useState("");
 
   const [results, setResults] =
     useState<Service[]>([]);
@@ -41,9 +43,12 @@ export default function SearchPage() {
     try {
       const response =
         await fetch(
-          `https://brd-7oq0.onrender.com/api/search?q=${encodeURIComponent(
+          `${API_URL}/api/search?q=${encodeURIComponent(
             searchQuery
-          )}`
+          )}`,
+          {
+            cache: "no-store",
+          }
         );
 
       if (!response.ok) {
@@ -56,7 +61,6 @@ export default function SearchPage() {
         await response.json();
 
       setResults(data);
-
     } catch (error) {
       console.error(
         "Search error:",
@@ -64,7 +68,6 @@ export default function SearchPage() {
       );
 
       setResults([]);
-
     } finally {
       setLoading(false);
     }
@@ -77,13 +80,34 @@ export default function SearchPage() {
       `/service/${serviceId}`;
   }
 
+  function getImageUrl(
+    imageUrl?: string
+  ) {
+    if (!imageUrl) {
+      return null;
+    }
+
+    if (
+      imageUrl.startsWith("http://") ||
+      imageUrl.startsWith("https://")
+    ) {
+      return imageUrl;
+    }
+
+    if (imageUrl.startsWith("/")) {
+      return `${API_URL}${imageUrl}`;
+    }
+
+    return `${API_URL}/${imageUrl}`;
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center px-6 pt-24">
 
       {/* TITLE */}
 
       <h1 className="mb-10 text-center text-7xl font-light tracking-tight">
-        Search Solutions 
+        Search Solutions
       </h1>
 
       {/* SEARCH */}
@@ -107,42 +131,47 @@ export default function SearchPage() {
 
       {/* SEARCH RESULTS */}
 
-      {!loading &&
-        query && (
-          <section className="mt-10 w-full max-w-5xl">
+      {!loading && query && (
+        <section className="mt-10 w-full max-w-5xl">
 
-            <div className="mb-6">
+          <div className="mb-6">
 
-              <h2 className="text-2xl font-medium">
-                Results for "{query}"
-              </h2>
+            <h2 className="text-2xl font-medium">
+              Results for "{query}"
+            </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
-                {results.length} service
-                {results.length === 1
-                  ? ""
-                  : "s"} found
+            <p className="mt-1 text-sm text-gray-500">
+              {results.length} service
+              {results.length === 1
+                ? ""
+                : "s"} found
+            </p>
+
+          </div>
+
+          {results.length === 0 ? (
+
+            <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
+
+              <p className="text-gray-500">
+                No services found.
               </p>
 
             </div>
 
-            {results.length === 0 ? (
+          ) : (
 
-              <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
+            <div className="grid gap-5 md:grid-cols-2">
 
-                <p className="text-gray-500">
-                  No services found.
-                </p>
+              {results.map(
+                (service) => {
 
-              </div>
+                  const imageUrl =
+                    getImageUrl(
+                      service.image_url
+                    );
 
-            ) : (
-
-              <div className="grid gap-5 md:grid-cols-2">
-
-                {results.map(
-                  (service) => (
-
+                  return (
                     <article
                       key={service.id}
                       className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
@@ -150,19 +179,19 @@ export default function SearchPage() {
 
                       {/* IMAGE */}
 
-                      {service.image_url && (
+                      {imageUrl && (
                         <img
-                          src={
-                            service.image_url.startsWith(
-                              "http"
-                            )
-                              ? service.image_url
-                              : `https://brd-7oq0.onrender.com${service.image_url}`
-                          }
+                          src={imageUrl}
                           alt={
                             service.name
                           }
                           className="h-48 w-full object-cover"
+                          onError={(
+                            event
+                          ) => {
+                            event.currentTarget.style.display =
+                              "none";
+                          }}
                         />
                       )}
 
@@ -202,6 +231,7 @@ export default function SearchPage() {
                           </p>
 
                           <button
+                            type="button"
                             onClick={() =>
                               inquire(
                                 service.id
@@ -217,16 +247,15 @@ export default function SearchPage() {
                       </div>
 
                     </article>
+                  );
+                }
+              )}
 
-                  )
-                )}
+            </div>
+          )}
 
-              </div>
-
-            )}
-
-          </section>
-        )}
+        </section>
+      )}
 
       {/* FRONT PAGE SERVICES */}
 

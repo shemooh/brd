@@ -19,7 +19,9 @@ interface User {
   email: string;
 }
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://brd-7oq0.onrender.com";
 
 export default function ServicePage() {
   const params = useParams();

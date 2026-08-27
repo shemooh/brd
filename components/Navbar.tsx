@@ -9,6 +9,10 @@ interface User {
   email: string;
 }
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://brd-7oq0.onrender.com";
+
 export default function Navbar() {
 
   const [user, setUser] =
@@ -23,7 +27,7 @@ export default function Navbar() {
     try {
 
       const response = await fetch(
-        "https://brd-7oq0.onrender.com/api/auth/me",
+        `${API_URL}/api/auth/me`,
         {
           method: "GET",
           credentials: "include",
@@ -96,7 +100,7 @@ export default function Navbar() {
     try {
 
       await fetch(
-        "https://brd-7oq0.onrender.com/api/auth/logout",
+        `${API_URL}/api/auth/logout`,
         {
           method: "POST",
           credentials: "include",

@@ -13,6 +13,10 @@ interface SearchBarProps {
   onSearch?: (query: string) => void;
 }
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:5000";
+
 export default function SearchBar({
   onSearch,
 }: SearchBarProps) {
@@ -24,7 +28,6 @@ export default function SearchBar({
   const containerRef =
     useRef<HTMLDivElement>(null);
 
-
   /*
    * LOAD SERVICES FROM MYSQL
    */
@@ -33,7 +36,10 @@ export default function SearchBar({
     async function loadServices() {
       try {
         const response = await fetch(
-          "https://brd-7oq0.onrender.com/api/services"
+          `${API_URL}/api/services`,
+          {
+            cache: "no-store",
+          }
         );
 
         if (!response.ok) {
@@ -53,7 +59,6 @@ export default function SearchBar({
 
     loadServices();
   }, []);
-
 
   /*
    * CLOSE SUGGESTIONS
@@ -87,7 +92,6 @@ export default function SearchBar({
     };
   }, []);
 
-
   /*
    * FILTER RECOMMENDATIONS
    */
@@ -97,7 +101,6 @@ export default function SearchBar({
       ? []
       : services
           .filter((service) => {
-
             const search =
               query.toLowerCase();
 
@@ -105,26 +108,21 @@ export default function SearchBar({
               service.name
                 .toLowerCase()
                 .includes(search) ||
-
               service.category
                 .toLowerCase()
                 .includes(search) ||
-
               service.provider
                 .toLowerCase()
                 .includes(search)
             );
-
           })
           .slice(0, 6);
-
 
   /*
    * SEARCH
    */
 
   function submit(searchQuery?: string) {
-
     const value =
       searchQuery ?? query;
 
@@ -133,12 +131,10 @@ export default function SearchBar({
     }
 
     setQuery(value);
-
     setShowSuggestions(false);
 
     onSearch?.(value);
   }
-
 
   /*
    * INPUT CHANGE
@@ -147,7 +143,6 @@ export default function SearchBar({
   function handleChange(
     value: string
   ) {
-
     setQuery(value);
 
     setShowSuggestions(
@@ -155,33 +150,30 @@ export default function SearchBar({
     );
   }
 
-
   return (
-
     <div
       ref={containerRef}
       className="relative w-full max-w-3xl"
     >
-
       {/* SEARCH BOX */}
 
-      <div className="
-        flex
-        h-14
-        items-center
-        rounded-full
-        border
-        border-gray-300
-        bg-white
-        px-5
-        shadow-sm
-        focus-within:border-gray-500
-      ">
-
+      <div
+        className="
+          flex
+          h-14
+          items-center
+          rounded-full
+          border
+          border-gray-300
+          bg-white
+          px-5
+          shadow-sm
+          focus-within:border-gray-500
+        "
+      >
         <span className="text-xl text-gray-400">
           ⌕
         </span>
-
 
         <input
           className="
@@ -199,14 +191,11 @@ export default function SearchBar({
             )
           }
           onFocus={() => {
-
             if (query.trim()) {
               setShowSuggestions(true);
             }
-
           }}
           onKeyDown={(event) => {
-
             if (event.key === "Enter") {
               submit();
             }
@@ -214,35 +203,31 @@ export default function SearchBar({
             if (event.key === "Escape") {
               setShowSuggestions(false);
             }
-
           }}
         />
-
       </div>
-
 
       {/* RECOMMENDATIONS */}
 
       {showSuggestions &&
         recommendations.length > 0 && (
-
-          <div className="
-            absolute
-            left-0
-            right-0
-            top-16
-            z-50
-            overflow-hidden
-            rounded-2xl
-            border
-            border-gray-200
-            bg-white
-            shadow-lg
-          ">
-
+          <div
+            className="
+              absolute
+              left-0
+              right-0
+              top-16
+              z-50
+              overflow-hidden
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              shadow-lg
+            "
+          >
             {recommendations.map(
               (service) => (
-
                 <button
                   key={service.id}
                   type="button"
@@ -261,69 +246,67 @@ export default function SearchBar({
                     hover:bg-gray-50
                   "
                 >
-
                   {/* SEARCH ICON */}
 
-                  <span className="
-                    flex
-                    h-9
-                    w-9
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-gray-100
-                    text-gray-500
-                  ">
+                  <span
+                    className="
+                      flex
+                      h-9
+                      w-9
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-gray-100
+                      text-gray-500
+                    "
+                  >
                     ⌕
                   </span>
-
 
                   {/* SERVICE INFO */}
 
                   <div className="min-w-0">
-
-                    <p className="
-                      truncate
-                      text-sm
-                      font-medium
-                      text-gray-900
-                    ">
+                    <p
+                      className="
+                        truncate
+                        text-sm
+                        font-medium
+                        text-gray-900
+                      "
+                    >
                       {service.name}
                     </p>
 
-                    <p className="
-                      mt-0.5
-                      truncate
-                      text-xs
-                      text-gray-500
-                    ">
+                    <p
+                      className="
+                        mt-0.5
+                        truncate
+                        text-xs
+                        text-gray-500
+                      "
+                    >
                       {service.category}
                       {" · "}
                       {service.provider}
                     </p>
-
                   </div>
-
                 </button>
-
               )
             )}
-
           </div>
-
         )}
-
 
       {/* BUTTONS */}
 
-      <div className="
-        mt-6
-        flex
-        justify-center
-        gap-3
-      ">
-
+      <div
+        className="
+          mt-6
+          flex
+          justify-center
+          gap-3
+        "
+      >
         <button
           type="button"
           onClick={() => submit()}
@@ -340,25 +323,20 @@ export default function SearchBar({
           Search
         </button>
 
-
         <button
           type="button"
           onClick={() => {
-
             if (services.length > 0) {
-
               const random =
                 services[
                   Math.floor(
                     Math.random() *
-                    services.length
+                      services.length
                   )
                 ];
 
               submit(random.name);
-
             }
-
           }}
           className="
             rounded-md
@@ -372,10 +350,7 @@ export default function SearchBar({
         >
           I'm Feeling Something
         </button>
-
       </div>
-
     </div>
-
   );
 }
