@@ -1,6 +1,9 @@
-
+import os
 import mysql.connector
 from mysql.connector import Error
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # =========================================================
@@ -8,10 +11,11 @@ from mysql.connector import Error
 # =========================================================
 
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "admin",
-    "database": "simple_db",
+    "host": os.getenv("DB_HOST"),
+    "port": int(os.getenv("DB_PORT", "3306")),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME", "simple_db"),
 }
 
 
@@ -21,12 +25,16 @@ DB_CONFIG = {
 
 def get_connection():
     try:
-        return mysql.connector.connect(
+        connection = mysql.connector.connect(
             host=DB_CONFIG["host"],
+            port=DB_CONFIG["port"],
             user=DB_CONFIG["user"],
             password=DB_CONFIG["password"],
             database=DB_CONFIG["database"],
+            ssl_disabled=False,
         )
+
+        return connection
 
     except Error as error:
         print("MYSQL CONNECTION ERROR:")
@@ -217,8 +225,6 @@ def update_service(
     try:
         cursor = connection.cursor()
 
-        # If no new image was uploaded,
-        # keep the existing image.
         if image_url is None:
 
             cursor.execute("""
