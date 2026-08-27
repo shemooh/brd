@@ -67,13 +67,13 @@ app.config["SESSION_COOKIE_SECURE"] = False
 # =========================================================
 # CORS
 # =========================================================
-
 CORS(
     app,
     supports_credentials=True,
     origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://brd-hazel.vercel.app",
     ],
 )
 
