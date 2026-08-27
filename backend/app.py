@@ -73,7 +73,7 @@ CORS(
     origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://brd-hazel.vercel.app",
+        "https://patively.vercel.app",
     ],
 )
 
