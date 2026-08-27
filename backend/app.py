@@ -1,4 +1,18 @@
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+
+# Your Flask code continues below...
+
+
 from flask import (
     Flask,
     request,
@@ -1007,9 +1021,10 @@ def admin_delete_service(
 # =========================================================
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
 
     app.run(
-        host="127.0.0.1",
-        port=5000,
-        debug=True
+        host="0.0.0.0",
+        port=port,
+        debug=False
     )
