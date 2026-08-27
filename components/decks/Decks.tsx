@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -13,11 +12,11 @@ interface Service {
   price: number;
   image_url?: string | null;
 }
+
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://127.0.0.1:5000";
+  "https://brd-7oq0.onrender.com";
 
-  
 export default function Decks() {
   const router = useRouter();
 
@@ -29,17 +28,12 @@ export default function Decks() {
   const [error, setError] = useState("");
 
   // =====================================================
-  // BUILD IMAGE URL
+  // IMAGE URL
   // =====================================================
 
-  function getImageUrl(
-    imageUrl?: string | null
-  ) {
-    if (!imageUrl) {
-      return null;
-    }
+  function getImageUrl(imageUrl?: string | null) {
+    if (!imageUrl) return null;
 
-    // Full URL
     if (
       imageUrl.startsWith("http://") ||
       imageUrl.startsWith("https://")
@@ -47,12 +41,10 @@ export default function Decks() {
       return imageUrl;
     }
 
-    // Flask upload path
     if (imageUrl.startsWith("/")) {
       return `${API_URL}${imageUrl}`;
     }
 
-    // Relative path
     return `${API_URL}/${imageUrl}`;
   }
 
@@ -74,12 +66,26 @@ export default function Decks() {
           }
         );
 
+        if (!response.ok) {
+          let message = "Failed to load services";
+
+          try {
+            const data = await response.json();
+            message = data.error || message;
+          } catch {
+            // Ignore invalid JSON
+          }
+
+          throw new Error(
+            `${message} (${response.status})`
+          );
+        }
+
         const data = await response.json();
 
-        if (!response.ok) {
+        if (!Array.isArray(data)) {
           throw new Error(
-            data.error ||
-              "Failed to load services"
+            "Invalid services response"
           );
         }
 
@@ -115,18 +121,12 @@ export default function Decks() {
       const category =
         service.category?.trim();
 
-      if (!category) {
-        return;
-      }
+      if (!category) return;
 
       const normalized =
         category.toLowerCase();
 
-      if (
-        !uniqueCategories.has(
-          normalized
-        )
-      ) {
+      if (!uniqueCategories.has(normalized)) {
         uniqueCategories.set(
           normalized,
           category
@@ -163,12 +163,8 @@ export default function Decks() {
   // OPEN SERVICE
   // =====================================================
 
-  function openService(
-    serviceId: number
-  ) {
-    router.push(
-      `/service/${serviceId}`
-    );
+  function openService(serviceId: number) {
+    router.push(`/service/${serviceId}`);
   }
 
   // =====================================================
@@ -176,86 +172,100 @@ export default function Decks() {
   // =====================================================
 
   return (
-    <section className="mt-16 w-full max-w-7xl">
+    <section className="mt-24 w-full max-w-7xl">
 
       {/* =================================================
-          HEADER
+          SECTION HEADER
       ================================================= */}
 
-      <div className="mb-6">
+      <div className="mb-10">
 
-        <h2 className="text-2xl font-medium text-gray-900">
-          Explore digital services
-        </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 
-        <p className="mt-1 text-sm text-gray-500">
-          Find services from independent providers.
-        </p>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
+              Marketplace
+            </p>
+
+            <h2 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+              Explore digital services
+            </h2>
+
+            <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500">
+              Discover trusted digital services from
+              independent providers.
+            </p>
+          </div>
+
+          {!loading && !error && (
+            <p className="text-sm text-gray-400">
+              {filteredServices.length}{" "}
+              {filteredServices.length === 1
+                ? "service"
+                : "services"}
+            </p>
+          )}
+
+        </div>
 
       </div>
 
       {/* =================================================
-          CATEGORIES
+          CATEGORY NAVIGATION
       ================================================= */}
 
       {!loading &&
         !error &&
         categories.length > 1 && (
 
-          <div className="relative mb-8 w-full">
+          <div className="mb-10">
 
             <div
               className="
                 flex
-                w-full
                 gap-2
                 overflow-x-auto
                 pb-2
+                [-ms-overflow-style:none]
+                [scrollbar-width:none]
+                [&::-webkit-scrollbar]:hidden
               "
-              style={{
-                scrollbarWidth: "none",
-                msOverflowStyle:
-                  "none",
-              }}
             >
 
-              {categories.map(
-                (category) => {
+              {categories.map((category) => {
 
-                  const active =
-                    selectedCategory ===
-                    category;
+                const active =
+                  selectedCategory === category;
 
-                  return (
-                    <button
-                      key={category}
-                      type="button"
-                      onClick={() =>
-                        setSelectedCategory(
-                          category
-                        )
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() =>
+                      setSelectedCategory(
+                        category
+                      )
+                    }
+                    className={`
+                      shrink-0
+                      rounded-full
+                      px-5
+                      py-2.5
+                      text-sm
+                      font-medium
+                      transition-all
+                      duration-200
+                      ${
+                        active
+                          ? "bg-gray-900 text-white shadow-sm"
+                          : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
                       }
-                      className={`
-                        shrink-0
-                        whitespace-nowrap
-                        rounded-full
-                        px-5
-                        py-2.5
-                        text-sm
-                        font-medium
-                        transition
-                        ${
-                          active
-                            ? "bg-gray-900 text-white"
-                            : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
-                        }
-                      `}
-                    >
-                      {category}
-                    </button>
-                  );
-                }
-              )}
+                    `}
+                  >
+                    {category}
+                  </button>
+                );
+              })}
 
             </div>
 
@@ -268,20 +278,48 @@ export default function Decks() {
 
       {loading && (
 
-        <div
-          className="
-            rounded-2xl
-            border
-            border-gray-200
-            bg-white
-            p-10
-            text-center
-          "
-        >
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
-          <p className="text-sm text-gray-500">
-            Loading services...
-          </p>
+          {Array.from({ length: 8 }).map(
+            (_, index) => (
+
+              <div
+                key={index}
+                className="
+                  overflow-hidden
+                  rounded-3xl
+                  border
+                  border-gray-200
+                  bg-white
+                "
+              >
+
+                <div className="h-56 animate-pulse bg-gray-100" />
+
+                <div className="space-y-4 p-5">
+
+                  <div className="h-5 w-3/4 animate-pulse rounded bg-gray-100" />
+
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+
+                  <div className="h-16 animate-pulse rounded bg-gray-100" />
+
+                  <div className="h-px bg-gray-100" />
+
+                  <div className="flex justify-between">
+
+                    <div className="h-7 w-20 animate-pulse rounded bg-gray-100" />
+
+                    <div className="h-10 w-28 animate-pulse rounded-full bg-gray-100" />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            )
+          )}
 
         </div>
 
@@ -293,19 +331,40 @@ export default function Decks() {
 
       {!loading && error && (
 
-        <div
-          className="
-            rounded-2xl
-            border
-            border-red-200
-            bg-white
-            p-10
-            text-center
-          "
-        >
+        <div className="
+          rounded-3xl
+          border
+          border-red-100
+          bg-red-50/50
+          p-12
+          text-center
+        ">
 
-          <p className="text-sm text-red-600">
+          <div className="
+            mx-auto
+            flex
+            h-12
+            w-12
+            items-center
+            justify-center
+            rounded-full
+            bg-white
+            text-red-500
+            shadow-sm
+          ">
+            !
+          </div>
+
+          <h3 className="mt-4 text-base font-semibold text-gray-900">
+            Unable to load services
+          </h3>
+
+          <p className="mt-2 text-sm text-red-600">
             {error}
+          </p>
+
+          <p className="mt-3 text-xs text-gray-400">
+            {API_URL}/api/services
           </p>
 
         </div>
@@ -313,289 +372,319 @@ export default function Decks() {
       )}
 
       {/* =================================================
-          NO SERVICES
+          EMPTY
       ================================================= */}
 
       {!loading &&
         !error &&
         filteredServices.length === 0 && (
 
-          <div
-            className="
-              rounded-2xl
-              border
-              border-gray-200
-              bg-white
-              p-10
-              text-center
-            "
-          >
+          <div className="
+            rounded-3xl
+            border
+            border-gray-200
+            bg-gray-50
+            px-6
+            py-16
+            text-center
+          ">
 
-            <p className="text-gray-500">
-              No services available in this category.
+            <div className="
+              mx-auto
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+              rounded-full
+              bg-white
+              text-gray-400
+              shadow-sm
+            ">
+              ⌕
+            </div>
+
+            <h3 className="mt-5 text-lg font-semibold text-gray-900">
+              No services found
+            </h3>
+
+            <p className="mt-2 text-sm text-gray-500">
+              There are no services in this category
+              yet.
             </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                setSelectedCategory("All")
+              }
+              className="
+                mt-6
+                rounded-full
+                bg-gray-900
+                px-5
+                py-2.5
+                text-sm
+                font-medium
+                text-white
+                transition
+                hover:bg-gray-800
+              "
+            >
+              View all services
+            </button>
 
           </div>
 
         )}
 
       {/* =================================================
-          SERVICE CARDS
+          SERVICE GRID
       ================================================= */}
 
       {!loading &&
         !error &&
         filteredServices.length > 0 && (
 
-          <div
-            className="
-              grid
-              w-full
-              grid-cols-1
-              gap-6
-              sm:grid-cols-2
-              lg:grid-cols-3
-              xl:grid-cols-4
-            "
-          >
+          <div className="
+            grid
+            w-full
+            grid-cols-1
+            gap-x-5
+            gap-y-8
+            sm:grid-cols-2
+            lg:grid-cols-3
+            xl:grid-cols-4
+          ">
 
-            {filteredServices.map(
-              (service) => {
+            {filteredServices.map((service) => {
 
-                const imageUrl =
-                  getImageUrl(
-                    service.image_url
-                  );
+              const imageUrl =
+                getImageUrl(
+                  service.image_url
+                );
 
-                return (
+              return (
 
-                  <article
-                    key={service.id}
+                <article
+                  key={service.id}
+                  className="
+                    group
+                    overflow-hidden
+                    rounded-3xl
+                    border
+                    border-gray-200
+                    bg-white
+                    transition-all
+                    duration-300
+                    hover:-translate-y-1
+                    hover:border-gray-300
+                    hover:shadow-xl
+                  "
+                >
+
+                  {/* =================================================
+                      IMAGE
+                  ================================================= */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openService(
+                        service.id
+                      )
+                    }
                     className="
-                      group
+                      relative
+                      block
+                      h-56
+                      w-full
                       overflow-hidden
-                      rounded-2xl
-                      border
-                      border-gray-200
-                      bg-white
-                      shadow-sm
-                      transition
-                      duration-200
-                      hover:-translate-y-1
-                      hover:shadow-lg
+                      bg-gray-100
+                      text-left
                     "
                   >
 
-                    {/* =================================
-                        IMAGE
-                    ================================= */}
+                    {imageUrl ? (
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openService(
-                          service.id
-                        )
-                      }
-                      className="
-                        block
-                        h-52
-                        w-full
-                        overflow-hidden
-                        bg-gray-100
-                        text-left
-                      "
-                    >
-
-                      {imageUrl ? (
-
-                        <img
-                          src={imageUrl}
-                          alt={
-                            service.name
-                          }
-                          className="
-                            h-full
-                            w-full
-                            object-cover
-                            transition
-                            duration-300
-                            group-hover:scale-105
-                          "
-                          onError={(
-                            event
-                          ) => {
-
-                            const image =
-                              event.currentTarget;
-
-                            image.style.display =
-                              "none";
-
-                            const parent =
-                              image.parentElement;
-
-                            if (
-                              parent &&
-                              !parent.querySelector(
-                                "[data-image-fallback]"
-                              )
-                            ) {
-
-                              const fallback =
-                                document.createElement(
-                                  "div"
-                                );
-
-                              fallback.setAttribute(
-                                "data-image-fallback",
-                                "true"
-                              );
-
-                              fallback.className =
-                                "flex h-full w-full items-center justify-center text-sm text-gray-400";
-
-                              fallback.textContent =
-                                "Image unavailable";
-
-                              parent.appendChild(
-                                fallback
-                              );
-                            }
-                          }}
-                        />
-
-                      ) : (
-
-                        <div
-                          className="
-                            flex
-                            h-full
-                            w-full
-                            items-center
-                            justify-center
-                            bg-gray-100
-                            text-sm
-                            text-gray-400
-                          "
-                        >
-                          No image available
-                        </div>
-
-                      )}
-
-                    </button>
-
-                    {/* =================================
-                        CONTENT
-                    ================================= */}
-
-                    <div className="flex min-h-[300px] flex-col p-5">
-
-                      {/* HEADER */}
-
-                      <div
+                      <img
+                        src={imageUrl}
+                        alt={service.name}
                         className="
-                          flex
-                          items-start
-                          justify-between
-                          gap-3
+                          h-full
+                          w-full
+                          object-cover
+                          transition-transform
+                          duration-500
+                          ease-out
+                          group-hover:scale-105
                         "
-                      >
+                        onError={(event) => {
 
-                        <div className="min-w-0">
+                          const image =
+                            event.currentTarget;
 
-                          <h3
-                            className="
-                              truncate
-                              text-lg
-                              font-semibold
-                              text-gray-900
-                            "
-                          >
-                            {service.name}
-                          </h3>
+                          image.style.display =
+                            "none";
 
-                          <p
-                            className="
-                              mt-1
-                              truncate
-                              text-sm
-                              text-gray-500
-                            "
-                          >
-                            {service.provider}
-                          </p>
+                          const parent =
+                            image.parentElement;
 
-                        </div>
+                          if (
+                            parent &&
+                            !parent.querySelector(
+                              "[data-image-fallback]"
+                            )
+                          ) {
 
-                        <span
-                          className="
-                            max-w-[110px]
-                            shrink-0
-                            truncate
-                            rounded-full
-                            bg-gray-100
-                            px-3
-                            py-1
-                            text-xs
-                            font-medium
-                            text-gray-600
-                          "
-                        >
-                          {service.category}
-                        </span>
+                            const fallback =
+                              document.createElement(
+                                "div"
+                              );
 
+                            fallback.setAttribute(
+                              "data-image-fallback",
+                              "true"
+                            );
+
+                            fallback.className =
+                              "flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400";
+
+                            fallback.textContent =
+                              "Image unavailable";
+
+                            parent.appendChild(
+                              fallback
+                            );
+                          }
+
+                        }}
+                      />
+
+                    ) : (
+
+                      <div className="
+                        flex
+                        h-full
+                        w-full
+                        items-center
+                        justify-center
+                        bg-gray-100
+                        text-sm
+                        text-gray-400
+                      ">
+                        No image available
                       </div>
 
-                      {/* DESCRIPTION */}
+                    )}
 
-                      <p
-                        className="
-                          mt-5
-                          line-clamp-4
-                          text-sm
-                          leading-6
-                          text-gray-600
-                        "
-                      >
-                        {service.description}
+                    {/* CATEGORY OVERLAY */}
+
+                    <div className="
+                      absolute
+                      left-4
+                      top-4
+                    ">
+
+                      <span className="
+                        rounded-full
+                        bg-white/90
+                        px-3
+                        py-1.5
+                        text-xs
+                        font-medium
+                        text-gray-700
+                        shadow-sm
+                        backdrop-blur
+                      ">
+                        {service.category}
+                      </span>
+
+                    </div>
+
+                  </button>
+
+                  {/* =================================================
+                      CONTENT
+                  ================================================= */}
+
+                  <div className="
+                    flex
+                    min-h-[285px]
+                    flex-col
+                    p-5
+                  ">
+
+                    {/* TITLE */}
+
+                    <div>
+
+                      <h3 className="
+                        line-clamp-2
+                        text-lg
+                        font-semibold
+                        leading-6
+                        tracking-tight
+                        text-gray-900
+                      ">
+                        {service.name}
+                      </h3>
+
+                      <p className="
+                        mt-2
+                        truncate
+                        text-sm
+                        text-gray-500
+                      ">
+                        by {service.provider}
                       </p>
 
-                      {/* FOOTER */}
+                    </div>
 
-                      <div
-                        className="
-                          mt-auto
-                          flex
-                          items-end
-                          justify-between
-                          gap-4
-                          border-t
-                          border-gray-100
-                          pt-5
-                        "
-                      >
+                    {/* DESCRIPTION */}
+
+                    <p className="
+                      mt-5
+                      line-clamp-3
+                      text-sm
+                      leading-6
+                      text-gray-600
+                    ">
+                      {service.description}
+                    </p>
+
+                    {/* FOOTER */}
+
+                    <div className="
+                      mt-auto
+                      border-t
+                      border-gray-100
+                      pt-5
+                    ">
+
+                      <div className="
+                        flex
+                        items-end
+                        justify-between
+                        gap-4
+                      ">
 
                         <div>
 
-                          <p
-                            className="
-                              text-xs
-                              text-gray-400
-                            "
-                          >
+                          <p className="
+                            text-xs
+                            text-gray-400
+                          ">
                             Starting from
                           </p>
 
-                          <p
-                            className="
-                              mt-1
-                              text-lg
-                              font-semibold
-                              text-gray-900
-                            "
-                          >
+                          <p className="
+                            mt-1
+                            text-xl
+                            font-semibold
+                            tracking-tight
+                            text-gray-900
+                          ">
                             ₱
                             {Number(
                               service.price
@@ -612,7 +701,6 @@ export default function Decks() {
                             )
                           }
                           className="
-                            shrink-0
                             rounded-full
                             bg-gray-900
                             px-4
@@ -620,8 +708,10 @@ export default function Decks() {
                             text-sm
                             font-medium
                             text-white
-                            transition
-                            hover:bg-gray-800
+                            transition-all
+                            duration-200
+                            hover:bg-gray-700
+                            active:scale-95
                           "
                         >
                           View service
@@ -631,11 +721,12 @@ export default function Decks() {
 
                     </div>
 
-                  </article>
+                  </div>
 
-                );
-              }
-            )}
+                </article>
+
+              );
+            })}
 
           </div>
 

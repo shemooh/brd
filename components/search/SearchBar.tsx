@@ -13,9 +13,10 @@ interface SearchBarProps {
   onSearch?: (query: string) => void;
 }
 
+// Render backend
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://127.0.0.1:5000";
+  "https://brd-7oq0.onrender.com";
 
 export default function SearchBar({
   onSearch,
@@ -29,7 +30,7 @@ export default function SearchBar({
     useRef<HTMLDivElement>(null);
 
   /*
-   * LOAD SERVICES FROM MYSQL
+   * LOAD SERVICES
    */
 
   useEffect(() => {
@@ -38,22 +39,37 @@ export default function SearchBar({
         const response = await fetch(
           `${API_URL}/api/services`,
           {
+            method: "GET",
             cache: "no-store",
           }
         );
 
         if (!response.ok) {
+          console.error(
+            "Failed to load services:",
+            response.status
+          );
           return;
         }
 
         const data = await response.json();
 
-        setServices(data);
+        if (Array.isArray(data)) {
+          setServices(data);
+        } else {
+          console.error(
+            "Invalid services response:",
+            data
+          );
+          setServices([]);
+        }
       } catch (error) {
         console.error(
           "Suggestion error:",
           error
         );
+
+        setServices([]);
       }
     }
 
@@ -61,8 +77,7 @@ export default function SearchBar({
   }, []);
 
   /*
-   * CLOSE SUGGESTIONS
-   * WHEN CLICKING OUTSIDE
+   * CLOSE SUGGESTIONS WHEN CLICKING OUTSIDE
    */
 
   useEffect(() => {
@@ -102,17 +117,17 @@ export default function SearchBar({
       : services
           .filter((service) => {
             const search =
-              query.toLowerCase();
+              query.toLowerCase().trim();
 
             return (
               service.name
-                .toLowerCase()
+                ?.toLowerCase()
                 .includes(search) ||
               service.category
-                .toLowerCase()
+                ?.toLowerCase()
                 .includes(search) ||
               service.provider
-                .toLowerCase()
+                ?.toLowerCase()
                 .includes(search)
             );
           })
@@ -149,6 +164,10 @@ export default function SearchBar({
       value.trim().length > 0
     );
   }
+
+  /*
+   * RENDER
+   */
 
   return (
     <div
